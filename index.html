@@ -13,26 +13,28 @@
             --sw-yellow: #FFE81F;
             --sw-blue: #69C8F2;
             --sw-red: #FF3B30;
-            --bg-black: #070709;
-            --card-bg: rgba(18, 18, 24, 0.75);
+            --bg-black: #050507;
+            --card-bg: rgba(14, 14, 20, 0.8);
             --border-color: rgba(255, 255, 255, 0.08);
             --text-main: #FFFFFF;
             --text-sub: #A1A1A6;
-            --glow-color: rgba(255, 232, 31, 0.25);
+            --glow-color: rgba(255, 232, 31, 0.2);
             --apple-green: #34C759;
+            --cold-blue: #00E5FF;
         }
 
         [data-theme="light"] {
-            --sw-yellow: #C5A02F;
+            --sw-yellow: #B8860B;
             --sw-blue: #007AFF;
             --sw-red: #FF3B30;
             --bg-black: #F5F5F7;
-            --card-bg: rgba(255, 255, 255, 0.82);
-            --border-color: rgba(0, 0, 0, 0.06);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --border-color: rgba(0, 0, 0, 0.08);
             --text-main: #1D1D1F;
-            --text-sub: #86868B;
-            --glow-color: rgba(0, 122, 255, 0.12);
+            --text-sub: #6E6E73;
+            --glow-color: rgba(0, 122, 255, 0.15);
             --apple-green: #248A3D;
+            --cold-blue: #007AFF;
         }
 
         body {
@@ -44,7 +46,7 @@
             justify-content: center;
             min-height: 100dvh;
             overflow-x: hidden;
-            transition: background-color 0.4s ease;
+            transition: background-color 0.4s cubic-bezier(0.25, 1, 0.5, 1);
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -52,14 +54,13 @@
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: -1;
-            opacity: 0.85;
+            opacity: 0.75;
         }
 
-        /* 모바일 세로형 초최적화 컨테이너 */
         .container {
             width: 100%;
-            max-width: 480px; /* 전형적인 모바일 세로 폭 규격 고정 */
-            padding: 24px 16px;
+            max-width: 460px; /* 모바일 완벽 세로 그립 규격 */
+            padding: 20px 16px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -70,53 +71,51 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 4px 0;
         }
 
         h1 {
             font-family: 'Orbitron', sans-serif;
             font-weight: 900;
-            font-size: 1.35rem;
+            font-size: 1.25rem;
             color: var(--sw-yellow);
             letter-spacing: 1px;
             margin: 0;
-            text-shadow: 0 0 15px var(--glow-color);
+            text-shadow: 0 0 12px var(--glow-color);
         }
 
         .top-controls {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
 
-        /* 프리미엄 모바일 카드 폼 요소 */
         .card {
             background: var(--card-bg);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
             padding: 20px;
-            border-radius: 18px;
+            border-radius: 20px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         .scan-controls {
             display: flex;
-            flex-direction: column; /* 세로형 스택 레이아웃 구조 */
-            gap: 10px;
+            flex-direction: column;
+            gap: 8px;
         }
 
         button {
             font-family: 'Orbitron', 'Noto Sans KR', sans-serif;
-            padding: 15px;
+            padding: 14px;
             border: 1px solid var(--border-color);
             border-radius: 12px;
             cursor: pointer;
             background: rgba(150, 150, 150, 0.08);
             color: var(--text-main);
             font-weight: 700;
-            font-size: 0.9rem;
-            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -131,30 +130,28 @@
         }
 
         button.primary { background: var(--sw-yellow); color: #000; border: none; font-weight: 900; }
-        button.primary:active { background: #FFFFFF; color: #000; }
-
         button.secondary { background: rgba(52, 199, 89, 0.12); border-color: var(--apple-green); color: var(--apple-green); }
-        button.danger { background: rgba(255, 59, 48, 0.12); border-color: var(--sw-red); color: var(--sw-red); padding: 8px 14px; font-size: 0.8rem; }
+        button.danger { background: rgba(255, 59, 48, 0.12); border-color: var(--sw-red); color: var(--sw-red); padding: 6px 12px; font-size: 0.75rem; }
 
-        /* 세로 화면 컴팩트 로또 볼 디자인 */
-        .ballBox { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+        /* 볼 컴포넌트 */
+        .ballBox { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
         .ball {
-            width: 38px; height: 38px; border-radius: 50%;
+            width: 36px; height: 36px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.95rem;
+            font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.9rem;
             color: #fff;
             background: #222;
             box-shadow: inset 0 -3px 6px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.2);
         }
         
         .ball.rolling {
-            animation: warpSpin 0.12s linear infinite;
+            animation: warpSpin 0.1s linear infinite;
             background: #444 !important;
         }
 
         @keyframes warpSpin {
-            0% { transform: translateY(-3px) scale(0.95); opacity: 0.8; }
-            100% { transform: translateY(3px) scale(0.95); opacity: 0.8; }
+            0% { transform: translateY(-2px) scaleY(0.9); }
+            100% { transform: translateY(2px) scaleY(0.9); }
         }
 
         .b1 { background: linear-gradient(135deg, #ffcc00, #ff9900); }
@@ -163,43 +160,24 @@
         .b30 { background: linear-gradient(135deg, #aaaaaa, #666666); }
         .b40 { background: linear-gradient(135deg, #b0d840, #248A3D); }
 
-        /* 모바일 9열 가로 압축형 히트맵 */
-        .heatmap-grid {
-            display: grid;
-            grid-template-columns: repeat(9, 1fr);
-            gap: 4px;
-            margin-top: 12px;
+        /* 3D 웜홀 레이더 캔버스 스타일 */
+        .radar-wrapper {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            margin: 12px 0;
+            background: rgba(0,0,0,0.2);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
         }
-        .heat-cell {
-            padding: 6px 0; text-align: center; border-radius: 5px; font-size: 0.7rem;
-            font-family: 'Orbitron', sans-serif; font-weight: bold; background: rgba(255,255,255,0.02);
-            border: 1px solid var(--border-color); color: var(--text-sub);
-        }
+        #radarCanvas { width: 100%; height: 100%; display: block; }
 
         .combo-analysis {
-            font-size: 0.75rem; color: var(--text-sub); display: flex; gap: 8px; margin-top: 4px;
+            font-size: 0.7rem; color: var(--text-sub); display: flex; gap: 6px; margin-top: 2px;
         }
-        .combo-badge { background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px; }
+        .combo-badge { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
 
         .combo-row {
             display: flex; flex-direction: column; align-items: flex-start;
-            padding: 14px 0; border-bottom: 1px solid var(--border-color);
-            position: relative;
-        }
-        .combo-row button { position: absolute; right: 0; top: 12px; padding: 8px 14px; font-size: 0.8rem; }
-
-        .loading {
-            color: var(--sw-blue); font-family: 'Orbitron', sans-serif; font-weight: bold;
-            font-size: 1rem; text-align: center; padding: 24px; text-shadow: 0 0 10px var(--sw-blue);
-        }
-    </style>
-</head>
-<body>
-
-<canvas id="space"></canvas>
-
-<div class="container">
-    <header>
-        <h1>Warp Pro</h1>
-        <div class="top-controls">
-            <button onclick
+            padding: 1
