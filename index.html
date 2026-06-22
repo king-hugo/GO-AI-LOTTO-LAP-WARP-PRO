@@ -180,4 +180,413 @@
 
         .combo-row {
             display: flex; flex-direction: column; align-items: flex-start;
-            padding: 1
+            padding: 12px 0; border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+        .combo-row button { position: absolute; right: 0; top: 10px; padding: 6px 12px; font-size: 0.75rem; }
+
+        .loading {
+            color: var(--sw-blue); font-family: 'Orbitron', sans-serif; font-weight: bold;
+            font-size: 0.95rem; text-align: center; padding: 20px; text-shadow: 0 0 10px var(--sw-blue);
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="space"></canvas>
+
+<div class="container">
+    <header>
+        <h1>Warp Pro Radar</h1>
+        <div class="top-controls">
+            <button onclick="toggleAudio()" id="bgmBtn" style="padding: 6px 10px; font-size:0.75rem;">🎵 Audio</button>
+            <button onclick="toggleTheme()" style="border-radius:50%; width:32px; height:32px; padding:0;">🌓</button>
+        </div>
+    </header>
+
+    <div class="card scan-controls">
+        <button onclick="analyze(10)">🛸 궤도 분석 타임라인 (10회)</button>
+        <button onclick="analyze(30)">🌌 항성계 연산 타임라인 (30회)</button>
+        <button onclick="analyze(100)">🛰️ 심우주 퀀텀 딥 다이브 (100회)</button>
+    </div>
+
+    <div id="status"></div>
+    <div id="analysis"></div>
+
+    <div class="card" id="ai-section" style="display:none;">
+        <h2 style="color: var(--sw-yellow); font-size:1rem; margin: 0 0 2px 0;">🤖 하이퍼 퀀텀 드라이브</h2>
+        <p style="font-size:0.72rem; color: var(--text-sub); margin: 0 0 12px 0;">웜홀 중력 필터 연산 기반 최적 경로 매핑</p>
+        
+        <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:6px; margin-bottom: 10px;">
+            <button class="primary" onclick="generateWarpSequence()">🎯 워프 시퀀스 가동</button>
+            <button onclick="toggleSaved()" style="font-size:0.75rem;">💾 보관함 (<span id="saved-count">0</span>)</button>
+        </div>
+        
+        <div id="ai-results"></div>
+
+        <div id="saved-results" style="margin-top: 15px; display:none;">
+            <h3 style="color: var(--sw-blue); font-size:0.85rem; border-top: 1px solid var(--border-color); padding-top: 12px; margin-bottom:6px;">📥 백업 차원 좌표</h3>
+            <div id="saved-list"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* 🎼 사운드 시스템: 스타워즈(70%) + 인터스텔라(30%) 믹싱 */
+let audioCtx = null, masterGain = null, chordsOscs = [], isPlayingAudio = false;
+
+function initAudioEngine() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+    masterGain.connect(audioCtx.destination);
+    
+    // 인터스텔라 감성의 D마이너 무한 드론 루프 구축
+    const frequencies = [146.83, 220.00, 293.66, 440.00];
+    frequencies.forEach((freq, index) => {
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = index % 2 === 0 ? 'sawtooth' : 'triangle'; // 스타워즈 브라스 느낌용 톱니파 매칭
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        
+        let filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(420, audioCtx.currentTime);
+        
+        gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+        osc.connect(filter).connect(gain).connect(masterGain);
+        osc.start();
+        chordsOscs.push(osc);
+    });
+}
+
+function playBrassChime(freq, duration = 0.22) {
+    if (!audioCtx || !isPlayingAudio) return;
+    for(let i = 0; i < 2; i++) {
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = 'sawtooth'; // 브라스 관악기 70% 질감
+        osc.frequency.setValueAtTime(freq + (i * 3), audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+}
+
+function toggleAudio() {
+    if (!audioCtx) initAudioEngine();
+    if (!isPlayingAudio) {
+        audioCtx.resume();
+        masterGain.gain.setTargetAtTime(0.6, audioCtx.currentTime, 0.5);
+        isPlayingAudio = true;
+        document.getElementById('bgmBtn').style.background = 'var(--apple-green)';
+        document.getElementById('bgmBtn').style.color = '#fff';
+    } else {
+        masterGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.4);
+        isPlayingAudio = false;
+        document.getElementById('bgmBtn').style.background = 'rgba(150,150,150,0.08)';
+        document.getElementById('bgmBtn').style.color = 'var(--text-main)';
+    }
+}
+
+/* 🌌 백그라운드 스타필드 엔진 */
+const canvas = document.getElementById('space');
+const ctx = canvas.getContext('2d');
+let width = canvas.width = window.innerWidth, height = canvas.height = window.innerHeight;
+let stars = [];
+for(let i = 0; i < 200; i++) stars.push({x: Math.random() * width - width / 2, y: Math.random() * height - height / 2, z: Math.random() * width, pz: Math.random() * width});
+let speed = 0.4, targetSpeed = 0.4;
+
+function drawStars() {
+    ctx.fillStyle = document.documentElement.getAttribute('data-theme') === 'light' ? 'rgba(245, 245, 247, 0.4)' : 'rgba(5, 5, 7, 0.4)';
+    ctx.fillRect(0, 0, width, height);
+    ctx.translate(width / 2, height / 2);
+    speed += (targetSpeed - speed) * 0.08;
+    for(let i = 0; i < stars.length; i++) {
+        let s = stars[i]; s.z -= speed;
+        if(s.z < 1) { s.z = width; s.pz = s.z; s.x = Math.random() * width - width / 2; s.y = Math.random() * height - height / 2; }
+        let sx = (s.x / s.z) * width, sy = (s.y / s.z) * height;
+        let px = (s.x / s.pz) * width, py = (s.y / s.pz) * height;
+        s.pz = s.z;
+        ctx.beginPath();
+        ctx.strokeStyle = document.documentElement.getAttribute('data-theme') === 'light' ? `rgba(0,122,255,${0.5 - s.z/width})` : `rgba(255,255,255,${0.8 - s.z/width})`;
+        ctx.lineWidth = Math.max(0.3, (1 - s.z / width) * 1.8);
+        ctx.moveTo(px, py); ctx.lineTo(sx, sy); ctx.stroke();
+    }
+    ctx.translate(-width / 2, -height / 2);
+    requestAnimationFrame(drawStars);
+}
+drawStars();
+
+window.addEventListener('resize', () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; });
+function toggleTheme() { document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light'); }
+
+/* 🌀 퀀텀 웜홀 3D 레이더 렌더링 엔진 */
+let radarCanvas = null, radarCtx = null, radarAnimationId = null;
+let radarBalls = [];
+
+function initWormholeRadar(hotNums, coldNums, counterMap) {
+    if(radarAnimationId) cancelAnimationFrame(radarAnimationId);
+    
+    radarCanvas = document.getElementById('radarCanvas');
+    if(!radarCanvas) return;
+    radarCtx = radarCanvas.getContext('2d');
+    
+    // 해상도 보정
+    const rect = radarCanvas.getBoundingClientRect();
+    radarCanvas.width = rect.width * window.devicePixelRatio;
+    radarCanvas.height = rect.height * window.devicePixelRatio;
+    radarCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    
+    radarBalls = [];
+    
+    // 데이터 맵 스케일링
+    const maxCount = Math.max(...Object.values(counterMap), 1);
+    
+    // 1~45번 공들을 웜홀 궤도 벡터 공간에 배치
+    for(let i = 1; i <= 45; i++) {
+        let count = counterMap[i] || 0;
+        let isHot = hotNums.includes(i);
+        let isCold = coldNums.includes(i);
+        
+        // 빈도가 높을수록 중심(초중력권)에 배치, 낮을수록 외곽(아이스 벨트) 배치
+        let ratio = count / maxCount; 
+        let targetRadius = 25 + (1 - ratio) * (cx - 45); // 최소 반지름 25, 최대 반지름 외곽선 부근
+        
+        radarBalls.push({
+            num: i,
+            radius: targetRadius,
+            angle: Math.random() * Math.PI * 2,
+            speed: 0.008 + (ratio * 0.02), // 안쪽일수록 공전 속도가 기하급수적으로 빠름
+            isHot: isHot,
+            isCold: isCold,
+            val: count
+        });
+    }
+    
+    animateWormhole(cx, cy);
+}
+
+function animateWormhole(cx, cy) {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    radarCtx.clearRect(0, 0, cx * 2, cy * 2);
+    
+    // 웜홀 백그라운드 소용돌이 에너지 그리드 라인 시각화
+    let time = Date.now() * 0.001;
+    radarCtx.strokeStyle = isLight ? 'rgba(0, 122, 255, 0.05)' : 'rgba(255, 232, 31, 0.04)';
+    for(let r = 20; r < cx; r += 25) {
+        radarCtx.beginPath();
+        radarCtx.arc(cx, cy, r + Math.sin(time + r)*3, 0, Math.PI * 2);
+        radarCtx.stroke();
+    }
+    
+    // 웜홀 특이점 싱귤래리티 중심 코어 빛 효과
+    let gradient = radarCtx.createRadialGradient(cx, cy, 2, cx, cy, 30);
+    gradient.addColorStop(0, isLight ? 'rgba(0,122,255,0.6)' : 'rgba(255, 232, 31, 0.7)');
+    gradient.addColorStop(0.5, isLight ? 'rgba(0,122,255,0.2)' : 'rgba(255, 70, 0, 0.3)');
+    gradient.addColorStop(1, 'rgba(0,0,0,0)');
+    radarCtx.fillStyle = gradient;
+    radarCtx.beginPath(); radarCtx.arc(cx, cy, 30, 0, Math.PI * 2); radarCtx.fill();
+    
+    // 공전 및 렌더링
+    radarBalls.forEach(b => {
+        b.angle += b.speed; // 중력 공전 가속
+        let bx = cx + Math.cos(b.angle) * b.radius;
+        let by = cy + Math.sin(b.angle) * b.radius;
+        
+        // 공 외형 및 텍스트 맵핑
+        radarCtx.beginPath();
+        let ballRad = b.isHot ? 9 : (b.isCold ? 7 : 6);
+        radarCtx.arc(bx, by, ballRad, 0, Math.PI * 2);
+        
+        if(b.isHot) {
+            radarCtx.fillStyle = 'rgba(255, 59, 48, 1)'; // 불타는 레드 네온
+            radarCtx.shadowBlur = 10; radarCtx.shadowColor = '#ff3b30';
+        } else if(b.isCold) {
+            radarCtx.fillStyle = isLight ? '#007AFF' : '#00E5FF'; // 동결 상태의 블루 네온
+            radarCtx.shadowBlur = 8; radarCtx.shadowColor = '#00E5FF';
+        } else {
+            radarCtx.fillStyle = isLight ? '#8E8E93' : '#3A3A3C';
+            radarCtx.shadowBlur = 0;
+        }
+        radarCtx.fill();
+        radarCtx.shadowBlur = 0; // 그림자 초기화
+        
+        // 번호 텍스트 주입 (HOT/COLD만 명시성 부여)
+        if(b.isHot || b.isCold || b.radius < cx * 0.5) {
+            radarCtx.fillStyle = '#fff';
+            radarCtx.font = 'bold 8px Orbitron';
+            radarCtx.textAlign = 'center';
+            radarCtx.textBaseline = 'middle';
+            radarCtx.fillText(b.num, bx, by);
+        }
+    });
+    
+    radarAnimationId = requestAnimationFrame(() => animateWormhole(cx, cy));
+}
+
+/* 🎯 데이터 연산 엔진 코어 */
+let globalHot = [], globalCold = [], globalCounter = {};
+let savedCombos = JSON.parse(localStorage.getItem('lottoCombosWarpRadar')) || [];
+document.getElementById('saved-count').innerText = savedCombos.length;
+
+async function fetchLottoData(round){
+    const url = `https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`;
+    const res = await fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(url));
+    return await res.json();
+}
+
+function getLatestRound() {
+    const firstDrawDate = new Date('2002-12-07T20:45:00+09:00');
+    return 1 + Math.floor((new Date() - firstDrawDate) / (1000 * 60 * 60 * 24 * 7));
+}
+
+function drawBallsHtml(nums, isRolling = false){
+    let html='<div class="ballBox">';
+    nums.forEach(n => { html+=`<div class="ball ${isRolling ? 'rolling' : bColor(n)}">${n}</div>`; });
+    return html + '</div>';
+}
+function bColor(n) {
+    if(n <= 10) return 'b1'; if(n <= 20) return 'b10';
+    if(n <= 30) return 'b20'; if(n <= 40) return 'b30'; return 'b40';
+}
+
+async function analyze(range){
+    targetSpeed = 16;
+    if(isPlayingAudio) playBrassChime(587.33, 0.35);
+    
+    document.getElementById("status").innerHTML = "<div class='loading'>🛸 퀀텀 차원 동기화 및 중력장 연산 중...</div>";
+    document.getElementById("ai-section").style.display = "none";
+    document.getElementById("analysis").innerHTML = "";
+    
+    const latestRound = getLatestRound();
+    for(let i=1; i<=45; i++) globalCounter[i] = 0;
+    const fetchPromises = [];
+    
+    for(let r = latestRound; r > latestRound - range; r--) fetchPromises.push(fetchLottoData(r).catch(() => null)); 
+
+    const dataResults = await Promise.all(fetchPromises);
+    let successCount = 0;
+    dataResults.forEach(d => {
+        if(d && d.returnValue === "success") {
+            successCount++;
+            [d.drwtNo1, d.drwtNo2, d.drwtNo3, d.drwtNo4, d.drwtNo5, d.drwtNo6].forEach(n => globalCounter[n]++);
+        }
+    });
+
+    const sorted = Object.entries(globalCounter).sort((a,b)=>b[1]-a[1]);
+    globalHot = sorted.slice(0, 10).map(v=>+v[0]);
+    globalCold = sorted.slice(-10).map(v=>+v[0]);
+
+    // 45격자판을 파괴하고 대안으로 이식된 3D 웜홀 레이더 아키텍처
+    document.getElementById("analysis").innerHTML = `
+    <div class="card">
+        <h2 style="font-size:0.95rem; margin-bottom:4px; color: var(--sw-blue);">🌀 퀀텀 웜홀 시각화 레이더 (최근 ${successCount}회)</h2>
+        <p style="font-size:0.68rem; color: var(--text-sub); margin:0 0 8px 0;">중심에 수렴할수록 고빈도(HOT), 외곽 궤도일수록 저빈도(COLD) 노드</p>
+        
+        <div class="radar-wrapper">
+            <canvas id="radarCanvas"></canvas>
+        </div>
+        
+        <h3 style="color:var(--sw-red); font-size:0.8rem; margin:12px 0 2px 0;">🔥 고중력 가속 번호 (HOT TOP 5)</h3>
+        ${drawBallsHtml(globalHot.slice(0,5))}
+        <h3 style="color:var(--cold-blue); font-size:0.8rem; margin:12px 0 2px 0;">🧊 절대 영도 결빙 번호 (COLD TOP 5)</h3>
+        ${drawBallsHtml(globalCold.slice(0,5))}
+    </div>`;
+
+    initWormholeRadar(globalHot, globalCold, globalCounter);
+
+    document.getElementById("status").innerHTML = "";
+    document.getElementById("ai-section").style.display = "block";
+    targetSpeed = 0.4;
+}
+
+function generateWarpSequence() {
+    targetSpeed = 10;
+    const box = document.getElementById("ai-results");
+    box.innerHTML = ""; 
+
+    for(let g=0; g<5; g++) {
+        let div = document.createElement('div');
+        div.className = 'combo-row';
+        div.id = `warp-row-${g}`;
+        div.innerHTML = `${drawBallsHtml(["?", "?", "?", "?", "?", "?"], true)}`;
+        box.appendChild(div);
+    }
+
+    for(let g=0; g<5; g++) {
+        setTimeout(() => {
+            let combo = new Set();
+            while(combo.size < 2) combo.add(globalHot[Math.floor(Math.random() * globalHot.length)]);
+            while(combo.size < 4) combo.add(globalCold[Math.floor(Math.random() * globalCold.length)]);
+            while(combo.size < 6) combo.add(Math.floor(Math.random() * 45) + 1);
+            
+            let finalSorted = Array.from(combo).sort((a,b)=>a-b);
+            let sum = finalSorted.reduce((a,b)=>a+b, 0);
+            let avg = Math.round(sum / 6);
+            let oddCount = finalSorted.filter(n => n % 2 !== 0).length;
+
+            const brassNotes = [293.66, 349.23, 440.00, 523.25, 587.33];
+            if(isPlayingAudio) playBrassChime(brassNotes[g], 0.18);
+
+            document.getElementById(`warp-row-${g}`).innerHTML = `
+                ${drawBallsHtml(finalSorted)}
+                <div class="combo-analysis">
+                    <span class="combo-badge">합: ${sum}</span>
+                    <span class="combo-badge">평균: ${avg}</span>
+                    <span class="combo-badge">홀짝: ${oddCount}:${6-oddCount}</span>
+                </div>
+                <button class="secondary" onclick='saveCombo(${JSON.stringify(finalSorted)})'>💾 보관</button>
+            `;
+
+            if(g === 4) targetSpeed = 0.4;
+        }, 250 * (g + 1));
+    }
+}
+
+function saveCombo(c) {
+    savedCombos.push(c);
+    localStorage.setItem('lottoCombosWarpRadar', JSON.stringify(savedCombos));
+    document.getElementById('saved-count').innerText = savedCombos.length;
+    if(isPlayingAudio) playBrassChime(880, 0.25);
+    alert("✅ 차원 백업 데이터베이스에 보관 완료.");
+    if(document.getElementById("saved-results").style.display === "block") renderSaved();
+}
+
+function toggleSaved() {
+    const b = document.getElementById("saved-results");
+    b.style.display = (b.style.display === "none") ? "block" : "none";
+    if(b.style.display === "block") renderSaved();
+}
+
+function renderSaved() {
+    const l = document.getElementById("saved-list");
+    savedCombos = JSON.parse(localStorage.getItem('lottoCombosWarpRadar')) || [];
+    if(savedCombos.length === 0) {
+        l.innerHTML = "<p style='text-align:center; color:var(--text-sub); font-size:0.75rem; padding: 15px;'>저장 기록 없음</p>";
+    } else {
+        l.innerHTML = savedCombos.map((c, i) => `
+            <div class="combo-row" style="padding: 6px 0;">
+                ${drawBallsHtml(c)}
+                <button class="danger" onclick="deleteCombo(${i})">삭제</button>
+            </div>
+        `).join('');
+    }
+}
+
+function deleteCombo(i) {
+    savedCombos.splice(i, 1);
+    localStorage.setItem('lottoCombosWarpRadar', JSON.stringify(savedCombos));
+    document.getElementById('saved-count').innerText = savedCombos.length;
+    renderSaved();
+}
+
+window.onload = () => { analyze(10); };
+</script>
+</body>
+</html>
