@@ -2,36 +2,36 @@
 <html lang="ko" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GO, AI Lotto Lab Warp Pro</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Orbitron:wght@400;700;900&family=Noto+Sans+KR:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Orbitron:wght@500;700;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --sw-yellow: #FFE81F;
             --sw-blue: #69C8F2;
             --sw-red: #FF3B30;
-            --bg-black: #0A0A0C;
-            --card-bg: rgba(20, 20, 25, 0.65);
+            --bg-black: #070709;
+            --card-bg: rgba(18, 18, 24, 0.75);
             --border-color: rgba(255, 255, 255, 0.08);
             --text-main: #FFFFFF;
             --text-sub: #A1A1A6;
-            --glow-color: rgba(255, 232, 31, 0.3);
+            --glow-color: rgba(255, 232, 31, 0.25);
             --apple-green: #34C759;
         }
 
         [data-theme="light"] {
-            --sw-yellow: #D4AF37;
+            --sw-yellow: #C5A02F;
             --sw-blue: #007AFF;
             --sw-red: #FF3B30;
             --bg-black: #F5F5F7;
-            --card-bg: rgba(255, 255, 255, 0.75);
-            --border-color: rgba(0, 0, 0, 0.08);
+            --card-bg: rgba(255, 255, 255, 0.82);
+            --border-color: rgba(0, 0, 0, 0.06);
             --text-main: #1D1D1F;
             --text-sub: #86868B;
-            --glow-color: rgba(0, 122, 255, 0.15);
+            --glow-color: rgba(0, 122, 255, 0.12);
             --apple-green: #248A3D;
         }
 
@@ -42,174 +42,155 @@
             background-color: var(--bg-black);
             display: flex;
             justify-content: center;
+            min-height: 100dvh;
             overflow-x: hidden;
-            transition: background-color 0.5s ease;
+            transition: background-color 0.4s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
         #space {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: -1;
-            opacity: 0.8;
+            opacity: 0.85;
         }
 
+        /* 모바일 세로형 초최적화 컨테이너 */
         .container {
             width: 100%;
-            max-width: 900px;
-            padding: 40px 20px;
+            max-width: 480px; /* 전형적인 모바일 세로 폭 규격 고정 */
+            padding: 24px 16px;
             box-sizing: border-box;
-            position: relative;
-            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
-        /* 헤더 & 테마 컨트롤 */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            padding: 4px 0;
         }
 
         h1 {
             font-family: 'Orbitron', sans-serif;
             font-weight: 900;
-            font-size: 2rem;
+            font-size: 1.35rem;
             color: var(--sw-yellow);
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             margin: 0;
-            text-transform: uppercase;
-            text-shadow: 0 0 20px var(--glow-color);
+            text-shadow: 0 0 15px var(--glow-color);
         }
 
         .top-controls {
             display: flex;
-            gap: 12px;
+            gap: 8px;
         }
 
-        /* 프리미엄 애플 스타일 카드 */
+        /* 프리미엄 모바일 카드 폼 요소 */
         .card {
             background: var(--card-bg);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            padding: 28px;
-            border-radius: 20px;
-            margin-bottom: 24px;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            padding: 20px;
+            border-radius: 18px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-        
-        .card:hover {
-            box-shadow: 0 12px 40px var(--glow-color);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        h2, h3 {
-            font-family: 'Orbitron', 'Michroma', sans-serif;
-            margin-top: 0;
+        .scan-controls {
+            display: flex;
+            flex-direction: column; /* 세로형 스택 레이아웃 구조 */
+            gap: 10px;
         }
 
-        /* 스캔 컨트롤 버튼 그리드 */
-        .scan-controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-
-        /* 고급스러운 버튼 정의 */
         button {
-            font-family: 'Orbitron', sans-serif;
-            padding: 14px 20px;
+            font-family: 'Orbitron', 'Noto Sans KR', sans-serif;
+            padding: 15px;
             border: 1px solid var(--border-color);
             border-radius: 12px;
             cursor: pointer;
-            background: rgba(150, 150, 150, 0.1);
+            background: rgba(150, 150, 150, 0.08);
             color: var(--text-main);
             font-weight: 700;
-            font-size: 0.85rem;
-            transition: all 0.25s ease;
+            font-size: 0.9rem;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            user-select: none;
         }
 
-        button:hover {
+        button:active {
+            transform: scale(0.97);
             background: var(--text-main);
             color: var(--bg-black);
-            transform: translateY(-2px);
         }
 
-        button.primary { background: var(--sw-yellow); color: #000; border: none; }
-        button.primary:hover { background: #fff; color: #000; box-shadow: 0 0 15px var(--sw-yellow); }
+        button.primary { background: var(--sw-yellow); color: #000; border: none; font-weight: 900; }
+        button.primary:active { background: #FFFFFF; color: #000; }
 
-        button.secondary { background: rgba(52, 199, 89, 0.15); border-color: var(--apple-green); color: var(--apple-green); }
-        button.secondary:hover { background: var(--apple-green); color: #fff; }
+        button.secondary { background: rgba(52, 199, 89, 0.12); border-color: var(--apple-green); color: var(--apple-green); }
+        button.danger { background: rgba(255, 59, 48, 0.12); border-color: var(--sw-red); color: var(--sw-red); padding: 8px 14px; font-size: 0.8rem; }
 
-        button.danger { background: rgba(255, 59, 48, 0.15); border-color: var(--sw-red); color: var(--sw-red); }
-        button.danger:hover { background: var(--sw-red); color: #fff; }
-
-        /* 볼 컴포넌트 & 애니메이션 효과 */
-        .ballBox { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+        /* 세로 화면 컴팩트 로또 볼 디자인 */
+        .ballBox { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
         .ball {
-            width: 46px; height: 46px; border-radius: 50%;
+            width: 38px; height: 38px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.1rem;
-            color: #fff; 
-            background: #333;
-            box-shadow: inset 0 -4px 8px rgba(0,0,0,0.4), 0 4px 10px rgba(0,0,0,0.3);
-            transition: transform 0.3s ease, background 0.5s ease;
+            font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.95rem;
+            color: #fff;
+            background: #222;
+            box-shadow: inset 0 -3px 6px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.2);
         }
         
         .ball.rolling {
-            animation: spin 0.15s linear infinite;
-            background: #555 !important;
+            animation: warpSpin 0.12s linear infinite;
+            background: #444 !important;
         }
 
-        @keyframes spin {
-            0% { transform: translateY(-5px) scaleY(0.9); }
-            50% { transform: translateY(5px) scaleY(0.9); }
-            100% { transform: translateY(-5px) scaleY(0.9); }
+        @keyframes warpSpin {
+            0% { transform: translateY(-3px) scale(0.95); opacity: 0.8; }
+            100% { transform: translateY(3px) scale(0.95); opacity: 0.8; }
         }
 
-        /* 로또 볼 오리지널 컬러 매핑 */
         .b1 { background: linear-gradient(135deg, #ffcc00, #ff9900); }
         .b10 { background: linear-gradient(135deg, #69C8F2, #007AFF); }
         .b20 { background: linear-gradient(135deg, #ff7272, #ff3b30); }
         .b30 { background: linear-gradient(135deg, #aaaaaa, #666666); }
         .b40 { background: linear-gradient(135deg, #b0d840, #248A3D); }
 
-        /* 히트맵 그리드 */
+        /* 모바일 9열 가로 압축형 히트맵 */
         .heatmap-grid {
             display: grid;
             grid-template-columns: repeat(9, 1fr);
-            gap: 6px;
-            margin-top: 15px;
+            gap: 4px;
+            margin-top: 12px;
         }
         .heat-cell {
-            padding: 8px 0; text-align: center; border-radius: 6px; font-size: 0.75rem;
-            font-family: 'Orbitron', sans-serif; font-weight: bold; background: rgba(255,255,255,0.03);
+            padding: 6px 0; text-align: center; border-radius: 5px; font-size: 0.7rem;
+            font-family: 'Orbitron', sans-serif; font-weight: bold; background: rgba(255,255,255,0.02);
             border: 1px solid var(--border-color); color: var(--text-sub);
         }
 
-        /* 분석 라벨 & 궁합 분석 레이아웃 */
         .combo-analysis {
-            font-size: 0.8rem; color: var(--text-sub); display: flex; gap: 15px; margin-top: 6px;
+            font-size: 0.75rem; color: var(--text-sub); display: flex; gap: 8px; margin-top: 4px;
         }
-        .combo-badge {
-            background: rgba(255,255,255,0.07); padding: 2px 8px; border-radius: 4px;
-        }
+        .combo-badge { background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px; }
 
         .combo-row {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 0; border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap; gap: 10px;
+            display: flex; flex-direction: column; align-items: flex-start;
+            padding: 14px 0; border-bottom: 1px solid var(--border-color);
+            position: relative;
         }
+        .combo-row button { position: absolute; right: 0; top: 12px; padding: 8px 14px; font-size: 0.8rem; }
 
         .loading {
             color: var(--sw-blue); font-family: 'Orbitron', sans-serif; font-weight: bold;
-            font-size: 1.1rem; text-align: center; padding: 30px; text-shadow: 0 0 10px var(--sw-blue);
-        }
-
-        @media (max-width: 650px) {
-            h1 { font-size: 1.4rem; }
-            .scan-controls { grid-template-columns: 1fr; }
-            .heatmap-grid { grid-template-columns: repeat(5, 1fr); }
+            font-size: 1rem; text-align: center; padding: 24px; text-shadow: 0 0 10px var(--sw-blue);
         }
     </style>
 </head>
@@ -219,335 +200,6 @@
 
 <div class="container">
     <header>
-        <h1>AI Lotto Lab Warp Pro</h1>
+        <h1>Warp Pro</h1>
         <div class="top-controls">
-            <button onclick="toggleAudio()" id="bgmBtn" title="BGM 재생/정지">🎵 Audio</button>
-            <button onclick="toggleTheme()" id="themeBtn" style="border-radius:50%; width:44px; height:44px; padding:0;">🌓</button>
-        </div>
-    </header>
-
-    <div class="card scan-controls">
-        <button onclick="analyze(10)">🛸 궤도 스캔 (10회)</button>
-        <button onclick="analyze(30)">🌌 항성계 스캔 (30회)</button>
-        <button onclick="analyze(100)">🛰️ 심우주 퀀텀 다이브 (100회)</button>
-    </div>
-
-    <div id="status"></div>
-
-    <div id="analysis"></div>
-
-    <div class="card" id="ai-section" style="display:none;">
-        <h2 style="color: var(--sw-yellow); font-size:1.3rem;">🤖 AI 하이퍼 퀀텀 엔진</h2>
-        <p style="font-size:0.8rem; color: var(--text-sub); margin-bottom: 20px;">
-            분석된 좌표 데이터를 기반으로 최적화된 5개의 하이퍼스페이스 워프 경로를 추출합니다.
-        </p>
-        <div style="display:flex; gap:10px; margin-bottom: 20px;">
-            <button class="primary" onclick="generateAIWithSlotMachine()">🎯 AI 경로 시퀀스 가동</button>
-            <button onclick="toggleSaved()">💾 내 좌표 보관함 (<span id="saved-count">0</span>)</button>
-        </div>
-        
-        <div id="ai-results"></div>
-
-        <div id="saved-results" style="margin-top: 25px; display:none;">
-            <h3 style="color: var(--sw-blue); font-size:1.1rem; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                📥 백업된 차원 타임라인 리스트
-            </h3>
-            <div id="saved-list"></div>
-        </div>
-    </div>
-</div>
-
-<script>
-/* 🎼 Web Audio API 기반 오케스트라풍 오디오 시스템 */
-let audioCtx = null;
-let bgmOsc = null;
-let bgmGain = null;
-let isPlayingAudio = false;
-
-function initAudio() {
-    if (audioCtx) return;
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    // 신비로운 우주 배경 백그라운드 드론 신스 합성
-    bgmGain = audioCtx.createGain();
-    bgmGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-    
-    let osc1 = audioCtx.createOscillator();
-    let osc2 = audioCtx.createOscillator();
-    osc1.type = 'sine'; osc1.frequency.setValueAtTime(55, audioCtx.currentTime); // A1 노드
-    osc2.type = 'triangle'; osc2.frequency.setValueAtTime(110, audioCtx.currentTime); // A2 노드
-    
-    // 모듈레이션 효과용 저주파 오실레이터(LFO) 추가하여 우주선 엔진음 구현
-    let lfo = audioCtx.createOscillator();
-    let lfoGain = audioCtx.createGain();
-    lfo.frequency.setValueAtTime(0.2, audioCtx.currentTime);
-    lfoGain.gain.setValueAtTime(5, audioCtx.currentTime);
-    
-    lfo.connect(lfoGain);
-    lfoGain.connect(osc2.frequency);
-    
-    osc1.connect(bgmGain);
-    osc2.connect(bgmGain);
-    bgmGain.connect(audioCtx.destination);
-    
-    osc1.start(); osc2.start(); lfo.start();
-}
-
-function playBeep(freq, type = 'sine', duration = 0.08, vol = 0.1) {
-    if (!audioCtx || !isPlayingAudio) return;
-    let osc = audioCtx.createOscillator();
-    let gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-}
-
-function toggleAudio() {
-    if (!audioCtx) initAudio();
-    if (!isPlayingAudio) {
-        audioCtx.resume();
-        bgmGain.gain.setTargetAtTime(0.08, audioCtx.currentTime, 0.5);
-        isPlayingAudio = true;
-        document.getElementById('bgmBtn').style.background = 'var(--apple-green)';
-        document.getElementById('bgmBtn').style.color = '#fff';
-    } else {
-        bgmGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.3);
-        isPlayingAudio = false;
-        document.getElementById('bgmBtn').style.background = 'rgba(150,150,150,0.1)';
-        document.getElementById('bgmBtn').style.color = 'var(--text-main)';
-    }
-}
-
-/* 🌌 하이퍼드라이브 스타필드 배경 구현 */
-const canvas = document.getElementById('space');
-const ctx = canvas.getContext('2d');
-let width = canvas.width = window.innerWidth;
-let height = canvas.height = window.innerHeight;
-let stars = [];
-for(let i = 0; i < 600; i++) {
-    stars.push({x: Math.random() * width - width / 2, y: Math.random() * height - height / 2, z: Math.random() * width, pz: Math.random() * width});
-}
-let speed = 0.5; let targetSpeed = 0.5;
-
-function drawStars() {
-    ctx.fillStyle = document.documentElement.getAttribute('data-theme') === 'light' ? 'rgba(245, 245, 247, 0.35)' : 'rgba(10, 10, 12, 0.35)';
-    ctx.fillRect(0, 0, width, height);
-    ctx.translate(width / 2, height / 2);
-    speed += (targetSpeed - speed) * 0.08;
-    for(let i = 0; i < stars.length; i++) {
-        let s = stars[i]; s.z -= speed;
-        if(s.z < 1) { s.z = width; s.pz = s.z; s.x = Math.random() * width - width / 2; s.y = Math.random() * height - height / 2; }
-        let sx = (s.x / s.z) * width; let sy = (s.y / s.z) * height;
-        let px = (s.x / s.pz) * width; let py = (s.y / s.pz) * height;
-        s.pz = s.z;
-        ctx.beginPath();
-        ctx.strokeStyle = document.documentElement.getAttribute('data-theme') === 'light' ? `rgba(0, 122, 255, ${0.7 - s.z/width})` : `rgba(255, 255, 255, ${1 - s.z/width})`; 
-        ctx.lineWidth = Math.max(0.2, (1 - s.z / width) * 2.2); 
-        ctx.moveTo(px, py); ctx.lineTo(sx, sy); ctx.stroke();
-    }
-    ctx.translate(-width / 2, -height / 2);
-    requestAnimationFrame(drawStars);
-}
-drawStars();
-
-window.addEventListener('resize', () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; });
-
-/* 🌓 테마 스위처 */
-function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme');
-    const target = current === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', target);
-}
-
-/* 🎯 코어 로직 엔진 정의 */
-let globalHot = [], globalCold = [], globalCounter = {};
-let savedCombos = JSON.parse(localStorage.getItem('lottoCombosWarp')) || [];
-document.getElementById('saved-count').innerText = savedCombos.length;
-
-async function fetchLottoData(round){
-    const url = `https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`;
-    const res = await fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(url));
-    return await res.json();
-}
-
-function getLatestRound() {
-    const firstDrawDate = new Date('2002-12-07T20:45:00+09:00');
-    const today = new Date();
-    return 1 + Math.floor((today - firstDrawDate) / (1000 * 60 * 60 * 24 * 7));
-}
-
-function getBallColor(n) {
-    if(n <= 10) return 'b1'; if(n <= 20) return 'b10';
-    if(n <= 30) return 'b20'; if(n <= 40) return 'b30'; return 'b40';
-}
-
-function drawBallsHtml(nums, isRolling = false){
-    let html='<div class="ballBox">';
-    nums.forEach(n => { 
-        html+=`<div class="ball ${isRolling ? 'rolling' : getBallColor(n)}">${n}</div>`; 
-    });
-    return html + '</div>';
-}
-
-// 종합 통계 탐사 함수
-async function analyze(range){
-    targetSpeed = 22; // 하이퍼스페이스 대기 가속
-    if(isPlayingAudio) playBeep(880, 'sine', 0.2, 0.15);
-    
-    document.getElementById("status").innerHTML = "<div class='loading'>🛸 타임라인 차원 도약 및 동기화 중...</div>";
-    document.getElementById("ai-section").style.display = "none";
-    document.getElementById("analysis").innerHTML = "";
-    
-    const latestRound = getLatestRound();
-    for(let i=1; i<=45; i++) globalCounter[i] = 0;
-    const fetchPromises = [];
-    
-    for(let r = latestRound; r > latestRound - range; r--) {
-        fetchPromises.push(fetchLottoData(r).catch(() => null)); 
-    }
-
-    const dataResults = await Promise.all(fetchPromises);
-    let successCount = 0;
-    dataResults.forEach(d => {
-        if(d && d.returnValue === "success") {
-            successCount++;
-            [d.drwtNo1, d.drwtNo2, d.drwtNo3, d.drwtNo4, d.drwtNo5, d.drwtNo6].forEach(n => globalCounter[n]++);
-        }
-    });
-
-    const sorted = Object.entries(globalCounter).sort((a,b)=>b[1]-a[1]);
-    globalHot = sorted.slice(0, 12).map(v=>+v[0]);
-    globalCold = sorted.slice(-12).map(v=>+v[0]);
-
-    // 실시간 히트맵 빌더
-    let maxCount = Math.max(...Object.values(globalCounter));
-    let heatmapHtml = '<div class="heatmap-grid">';
-    for(let i=1; i<=45; i++) {
-        let opacity = maxCount > 0 ? (globalCounter[i] / maxCount) : 0.1;
-        let bgStyle = `background: rgba(255, 232, 31, ${opacity * 0.45})`;
-        if(document.documentElement.getAttribute('data-theme') === 'light') {
-            bgStyle = `background: rgba(0, 122, 255, ${opacity * 0.45})`;
-        }
-        heatmapHtml += `<div class="heat-cell" style="${bgStyle}" title="${i}번: ${globalCounter[i]}회 출현">${i}</div>`;
-    }
-    heatmapHtml += '</div>';
-
-    document.getElementById("analysis").innerHTML = `
-    <div class="card">
-        <h2 style="color: var(--sw-blue); font-size:1.3rem; margin-bottom:15px;">📊 양자 섹터 탐사 보고서 (최근 ${successCount}회 차동기화)</h2>
-        <h3 style="color:var(--sw-red); font-size:1rem; margin:10px 0 5px 0;">🔥 고빈도 집중 구역 (HOT)</h3>
-        ${drawBallsHtml(globalHot.slice(0,6))}
-        <h3 style="color:var(--sw-blue); font-size:1rem; margin:20px 0 5px 0;">🧊 에너지 저압 구역 (COLD)</h3>
-        ${drawBallsHtml(globalCold.slice(0,6))}
-        <h3 style="color:var(--sw-yellow); font-size:1rem; margin:25px 0 5px 0;">📊 전 하이퍼스페이스 분포 히트맵</h3>
-        ${heatmapHtml}
-    </div>`;
-
-    document.getElementById("status").innerHTML = "";
-    document.getElementById("ai-section").style.display = "block";
-    targetSpeed = 0.5; // 원래 속도로 감속
-}
-
-/* 🎰 슬롯머신 롤링 애니메이션 기능 탑재 생성 함수 */
-function generateAIWithSlotMachine() {
-    targetSpeed = 14;
-    const box = document.getElementById("ai-results");
-    box.innerHTML = ""; 
-
-    // 5게임 빈 프레임 임시 구축
-    for(let g=0; g<5; g++) {
-        let dummyNums = Array(6).fill("?");
-        let div = document.createElement('div');
-        div.className = 'combo-row';
-        div.id = `combo-row-${g}`;
-        div.innerHTML = `${drawBallsHtml(dummyNums, true)}<div class='combo-analysis'>🛸 연산 엔진 가동 대기 중...</div>`;
-        box.appendChild(div);
-    }
-
-    // 각 라인별 순차 정지 롤링 타이머 기획
-    for(let g=0; g<5; g++) {
-        setTimeout(() => {
-            let combo = new Set();
-            // 분석에 입각한 가중치 필터: HOT에서 2개, COLD에서 2개, 무작위 2개 추출 구조
-            while(combo.size < 2) combo.add(globalHot[Math.floor(Math.random() * globalHot.length)]);
-            while(combo.size < 4) combo.add(globalCold[Math.floor(Math.random() * globalCold.length)]);
-            while(combo.size < 6) combo.add(Math.floor(Math.random() * 45) + 1);
-            
-            let finalSorted = Array.from(combo).sort((a,b)=>a-b);
-            
-            // 🧬 번호 궁합 통계 메트릭스 연산
-            let sum = finalSorted.reduce((a,b)=>a+b, 0);
-            let avg = Math.round(sum / 6);
-            let oddCount = finalSorted.filter(n => n % 2 !== 0).length;
-            let evenCount = 6 - oddCount;
-
-            // 라인 정지 및 오디오 이펙트 피드백
-            if(isPlayingAudio) playBeep(600 + (g * 80), 'triangle', 0.12, 0.2);
-
-            const rowElement = document.getElementById(`combo-row-${g}`);
-            rowElement.innerHTML = `
-                ${drawBallsHtml(finalSorted)}
-                <div class="combo-analysis">
-                    <span class="combo-badge">합계: ${sum}</span>
-                    <span class="combo-badge">평균: ${avg}</span>
-                    <span class="combo-badge">홀짝: ${oddCount}:${evenCount}</span>
-                </div>
-                <button class="secondary" onclick='saveCombo(${JSON.stringify(finalSorted)})'>💾 보관</button>
-            `;
-
-            // 모든 연산이 끝났을 경우 메인 속도 복원
-            if(g === 4) targetSpeed = 0.5;
-        }, 350 * (g + 1));
-    }
-}
-
-/* 보관소 기능 제어 */
-function saveCombo(c) {
-    savedCombos.push(c);
-    localStorage.setItem('lottoCombosWarp', JSON.stringify(savedCombos));
-    document.getElementById('saved-count').innerText = savedCombos.length;
-    if(isPlayingAudio) playBeep(1200, 'sine', 0.15, 0.25);
-    alert("✅ 좌표축 차원 보관함에 안전하게 백업되었습니다.");
-    if(document.getElementById("saved-results").style.display === "block") renderSaved();
-}
-
-function toggleSaved() {
-    const b = document.getElementById("saved-results");
-    b.style.display = (b.style.display === "none") ? "block" : "none";
-    if(b.style.display === "block") renderSaved();
-}
-
-function renderSaved() {
-    const l = document.getElementById("saved-list");
-    savedCombos = JSON.parse(localStorage.getItem('lottoCombosWarp')) || [];
-    if(savedCombos.length === 0) {
-        l.innerHTML = "<p style='text-align:center; color:var(--text-sub); font-size:0.85rem; padding: 20px;'>저장 기록 없음</p>";
-    } else {
-        l.innerHTML = savedCombos.map((c, i) => `
-            <div class="combo-row">
-                ${drawBallsHtml(c)}
-                <button class="danger" onclick="deleteCombo(${i})">삭제</button>
-            </div>
-        `).join('');
-    }
-}
-
-function deleteCombo(i) {
-    savedCombos.splice(i, 1);
-    localStorage.setItem('lottoCombosWarp', JSON.stringify(savedCombos));
-    document.getElementById('saved-count').innerText = savedCombos.length;
-    renderSaved();
-}
-
-// 초기 기동 로드
-window.onload = () => {
-    analyze(10);
-};
-</script>
-</body>
-</html>
+            <button onclick
