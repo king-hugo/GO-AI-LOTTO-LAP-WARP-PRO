@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GO, AI Lotto Lab Warp Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Michroma&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --sw-yellow: #FFE81F; 
+            --sw-blue: #69C8F2;   
+            --sw-red: #BC1E22;    
+            --bg-black: #000000;
+            --glass-bg: rgba(20, 20, 25, 0.75);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Michroma', sans-serif;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            overflow-x: hidden;
+            background-color: var(--bg-black);
+        }
+
+        #space {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 3rem;
+            color: var(--sw-yellow);
+            text-align: center;
+            letter-spacing: 4px;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(255, 232, 31, 0.6), 2px 2px 0px #000;
+        }
+
+        @media (max-width: 600px) { h1 { font-size: 1.8rem; letter-spacing: 2px; } }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 30px;
+            border-radius: 24px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        h2, h3 {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .scan-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        @media (max-width: 600px) { .scan-controls { grid-template-columns: 1fr; gap: 10px; } }
+
+        button {
+            font-family: 'Orbitron', sans-serif;
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            background: rgba(40, 40, 50, 0.6);
+            color: white;
+            font-weight: 700;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            background: var(--sw-yellow);
+            color: #000;
+            border-color: var(--sw-yellow);
+            box-shadow: 0 0 15px rgba(255, 232, 31, 0.5);
+        }
+
+        button:active { transform: scale(0.97); }
+        button.secondary { background: rgba(52, 199, 89, 0.2); border-color: #34c759; color: #34c759; }
+        button.secondary:hover { background: #34c759; color: #000; }
+        button.danger { background: rgba(255, 59, 48, 0.2); border-color: #ff3b30; color: #ff3b30; }
+        button.danger:hover { background: #ff3b30; color: #fff; }
+
+        .ballBox { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+        .ball {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.1rem;
+            color: #fff;
+            box-shadow: inset 0 -4px 6px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .b1 { background: #fbc400; color: #000; }
+        .b10 { background: #69c8f2; color: #000; }
+        .b20 { background: #ff7272; }
+        .b30 { background: #aaa; }
+        .b40 { background: #b0d840; color: #000; }
+
+        .loading {
+            color: var(--sw-blue);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 20px;
+            text-shadow: 0 0 10px var(--sw-blue);
+        }
+
+        .combo-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .combo-row:last-child { border-bottom: none; }
+        canvas#freqChart { margin-top: 20px; max-height: 320px; width: 100% !important; }
+    </style>
+</head>
+<body>
+
+<canvas id="space"></canvas>
+
+<div class="container">
+    <h1>GO, AI Lotto Lab Warp Pro</h1>
+
+    <div class="card scan-controls">
+        <button onclick="analyze(10)">🛸 궤도 스캔 (Orbit)</button>
+        <button onclick="analyze(30)">🌌 항성계 스캔 (Stellar)</button>
+        <button onclick="analyze(100)">🛰️ 심우주 퀀텀 다이브</button>
+    </div>
+
+    <div id="status"></div>
+
+    <div class="card" id="ai-section" style="display:none;">
+        <h2 style="color: var(--sw-yellow); margin-top:0;">🤖 AI 양자 엔진 추천</h2>
+        <p style="font-size:0.8rem; color:#ccc;">분석된 하이퍼스페이스 좌표계 데이터를 기반으로 최적의 워프 경로(번호)를 도출합니다.</p>
+        <button class="secondary" onclick="generateAI()">🎯 AI 경로 5개 생성</button>
+        <button onclick="toggleSaved()">💾 내 좌표 보관함</button>
+        
+        <div id="ai-results" style="margin-top: 15px;"></div>
+        <div id="saved-results" style="margin-top: 25px; display:none;">
+            <h3 style="color: var(--sw-blue); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">📥 저장된 좌표 리스트</h3>
+            <div id="saved-list"></div>
+        </div>
+    </div>
+
+    <div id="analysis"></div>
+    
+    <div class="card" id="chart-section" style="display:none;">
+        <h2 style="margin-top:0;">📊 빈도 스펙트럼 분석</h2>
+        <canvas id="freqChart"></canvas>
+    </div>
+</div>
+
+<script>
+/* 🚀 우주 배경 캔버스 */
+const canvas = document.getElementById('space');
+const ctx = canvas.getContext('2d');
+let width = canvas.width = window.innerWidth;
+let height = canvas
